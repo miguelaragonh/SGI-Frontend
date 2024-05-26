@@ -1,6 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import sgi from "../img/sgi.png";
 import axios from "axios";
+import {
+  IonButtons,
+  IonHeader,
+  IonMenu,
+  IonMenuButton,
+  IonPage,
+  IonTitle,
+  IonToolbar,
+} from "@ionic/react";
+import { Link, Redirect, useHistory } from "react-router-dom";
 //const axios = require('axios/dist/node/axios.cjs');
 import { IonContent } from "@ionic/react";
 import {
@@ -11,13 +21,19 @@ import {
   IonCardTitle,
 } from "@ionic/react";
 import "../style/login.css";
+import { useAuth } from "./UserContext";
 function Login() {
   const [usuario, setUsuario] = useState("");
   const [data, setData] = useState(null);
   const [contrasena, setContrasena] = useState("");
   const [validacionCorreo, setValidacionCorreo] = useState(false);
   const [validacionContrasena, setValidacionContrasena] = useState(false);
-  //const axios = require('axios');
+  const { datos, isAuthenticated } = useAuth();
+  const navigate = useHistory();
+
+  useEffect(() => {
+    if (isAuthenticated) navigate.push("/home");
+  }, [isAuthenticated]);
 
   const handdleLogin = (e: any) => {
     e.preventDefault();
@@ -34,13 +50,16 @@ function Login() {
       validarContrasena(contrasena) == false
     ) {
       console.log("datos");
-      axios.post('http://localhost:3000/usuarios/iniciar', {
-        "CT_Usuario": usuario,
-        "CT_Contraseña": contrasena 
+      axios
+        .post("http://localhost:3000/usuarios/iniciar", {
+          CT_Usuario: usuario,
+          CT_Contraseña: contrasena,
         })
         .then((response) => {
           setData(response.data);
-          console.log('Toke: '+response.data['token']);
+          datos(response.data);
+          console.log("Toke: " + response.data.token);
+          console.log("Toke: " + response.data.usuario.CT_Usuario);
         });
     } else {
       console.log("No datos");
@@ -60,8 +79,8 @@ function Login() {
   };
 
   return (
-    <IonContent>
-      <div className="content">
+    <div className="content">
+      <IonPage>
         <IonCard className="custom-card">
           <img alt="Silhouette of mountains" src={sgi} />
           <IonCardHeader>
@@ -154,8 +173,8 @@ function Login() {
             </form>
           </IonCardContent>
         </IonCard>
-      </div>
-    </IonContent>
+      </IonPage>
+    </div>
   );
 }
 export default Login;
